@@ -152,6 +152,15 @@ const app = createApp({
             axios.post(`${url}/api/${apiPath}/order`, { data: this.form })
             .then(res => {
                 this.$refs.form.resetForm();
+                this.form = {
+                    user: {
+                        name: '',
+                        email: '',
+                        tel: '',
+                        address: ''
+                    },
+                    message: ''
+                }
                 this.getCart();
                 alert(res.data.message);
             })

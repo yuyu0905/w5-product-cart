@@ -42,7 +42,7 @@
                   {{ product.title }}
                 </td>
                 <td>
-                  <div class="h5" v-if="!product.price">{{ product.origin_price }} 元</div>
+                  <div class="h5" v-if="product.price === product.origin_price">{{ product.origin_price }} 元</div>
                   <div v-else>
                     <del class="h6">原價 {{ product.origin_price }} 元</del>
                     <div class="h5">現在只要 {{ product.price }} 元</div>
@@ -66,7 +66,7 @@
             </tbody>
           </table>
           <!-- 購物車列表 -->
-          <div class="text-end">
+          <div class="text-end" v-if="cart.carts && cart.carts.length > 0">
             <button class="btn btn-outline-danger" type="button" @click="delCars">清空購物車</button>
           </div>
           <table class="table align-middle">
@@ -76,42 +76,52 @@
                 <th>品名</th>
                 <th style="width: 150px">數量/單位</th>
                 <th>單價</th>
+                <th>小計</th>
               </tr>
             </thead>
             <tbody>
-              <template v-if="cart.carts">
-                <tr v-for="c in cart.carts" :key="c.id">
+              <template v-if="cart.carts && cart.carts.length > 0">
+                <tr v-for="cartItem in cart.carts" :key="cartItem.id">
                   <td>
-                    <button type="button" class="btn btn-outline-danger btn-sm" @click="delCart(c.id)"
-                      :disabled="c.id === loadingItem">
-                      <i class="fas fa-spinner fa-pulse"  v-if="c.id === loadingItem"></i>
+                    <button type="button" class="btn btn-outline-danger btn-sm" @click="delCart(cartItem.id)"
+                      :disabled="cartItem.id === loadingItem">
+                      <i class="fas fa-spinner fa-pulse"  v-if="cartItem.id === loadingItem"></i>
                       x
                     </button>
                   </td>
                   <td>
-                    {{ c.product.title }}
-                    <div class="text-success" v-if="c.coupon">
+                    {{ cartItem.product.title }}
+                    <div class="text-success" v-if="cartItem.coupon">
                       已套用優惠券
                     </div>
                   </td>
                   <td>
                     <div class="input-group input-group-sm">
                       <div class="input-group mb-3">
-                        <!-- <input v-model.number="c.qty" @blur="updateCart(c)"
+                        <!-- <input v-model.number="cartItem.qty" @blur="updateCart(cartItem)"
                             min="1" type="number" class="form-control"> -->
-                        <select class="form-select" v-model.number="c.qty" @change="updateCart(c)"
-                          :disabled="c.id === loadingItem">
+                        <select class="form-select" v-model.number="cartItem.qty" @change="updateCart(cartItem)"
+                          :disabled="cartItem.id === loadingItem">
                           <option v-for="i in 20" :value="i" :key="`${i}_qty`">{{i}}</option>
                         </select>
-                        <span class="input-group-text" id="basic-addon2">{{ c.product.unit }}</span>
+                        <span class="input-group-text" id="basic-addon2">{{ cartItem.product.unit }}</span>
                       </div>
                     </div>
                   </td>
                   <td class="text-end">
-                    <small class="text-success" v-if="cart.final_total !== cart.total">折扣價：</small>
-                    {{ c.final_total }}
+                      <small class="text-success" v-if="cartItem.product.price !== cartItem.product.origin_price">折扣價：</small>
+                      {{ cartItem.product.price }}
+                  </td>
+                  <td class="text-end">
+                      <small class="text-success" v-if="cart.final_total !== cart.total">折扣價：</small>
+                      {{ cartItem.final_total }}
                   </td>
                 </tr>
+              </template>
+              <template v-else>
+                  <tr>
+                      <td colspan="5" class="text-center">目前購物車沒有商品</td>
+                  </tr>
               </template>
             </tbody>
             <tfoot>
@@ -189,9 +199,11 @@
               <span class="badge bg-primary rounded-pill">{{ product.category }}</span>
               <p>商品描述：{{ product.description }}</p>
               <p>商品內容：{{ product.content }}</p>
-              <div class="h5" v-if="!product.price">{{ product.origin_price }} 元</div>
-              <del class="h6" v-if="product.price">原價 {{ product.origin_price }} 元</del>
-              <div class="h5" v-if="product.price">現在只要 {{ product.price }} 元</div>
+              <div class="h5" v-if="product.price === product.origin_price">{{ product.origin_price }} 元</div>
+              <div v-else>
+                <del class="h6" v-if="product.price">原價 {{ product.origin_price }} 元</del>
+                <div class="h5" v-if="product.price">現在只要 {{ product.price }} 元</div>
+              </div>
                 <div>
                   <div class="input-group">
                     <!-- <input type="number" class="form-control"
